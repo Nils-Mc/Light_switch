@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>ESP32 Relay</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f172a">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+</head>
+
+<body>
+  <h2>ESP32 Relay</h2>
+
+  <button onclick="connect()">🔗 Verbinden</button>
+  <br><br>
+
+  <button onclick="relayOn()">EIN</button>
+  <button onclick="relayOff()">AUS</button>
+
+<script>
+let characteristic = null;
+
+const SERVICE_UUID = '12345678-1234-1234-1234-123456789abc';
+const CHAR_UUID    = 'abcd1234-1234-1234-1234-abcdefabcdef';
+
+async function connect() {
+  try {
+    const device = await navigator.bluetooth.requestDevice({
+      filters: [{ name: 'ESP32-Relay' }],
+      optionalServices: [SERVICE_UUID]
+    });
+
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService(SERVICE_UUID);
+    characteristic = await service.getCharacteristic(CHAR_UUID);
+
+    alert('✅ Verbunden mit ESP32');
+  } catch (err) {
+    alert('❌ Fehler: ' + err);
+  }
+}
+
+function relayOn() {
+  if (!characteristic) return alert('Nicht verbunden');
+  characteristic.writeValue(
+    new TextEncoder().encode('ON')
+  );
+}
+
+function relayOff() {
+  if (!characteristic) return alert('Nicht verbunden');
+  characteristic.writeValue(
+    new TextEncoder().encode('OFF')
+  );
+}
+</script>
+</body>
+</html>
